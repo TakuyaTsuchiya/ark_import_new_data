@@ -9,7 +9,8 @@
       "Bash(git checkout:*)",
       "Bash(git push:*)",
       "Bash(gh pr create:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }
