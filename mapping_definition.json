@@ -1,0 +1,120 @@
+{
+  "column_mappings": {
+    "引継番号": {
+      "source": "案件取込用レポート",
+      "column": "契約番号",
+      "transform": "add_leading_zero"
+    },
+    "契約者氏名": {
+      "source": "案件取込用レポート",
+      "column": "契約元帳:主契約者",
+      "transform": "remove_fullwidth_space"
+    },
+    "契約者カナ": {
+      "source": "案件取込用レポート",
+      "column": "主契約者（カナ）",
+      "transform": ["remove_halfwidth_space", "hankaku_to_zenkaku"]
+    },
+    "契約者生年月日": {
+      "source": "案件取込用レポート",
+      "column": "生年月日1",
+      "validation": "check_birthdate"
+    },
+    "契約者TEL自宅": {
+      "source": "案件取込用レポート",
+      "column": "自宅TEL1",
+      "conditional": true
+    },
+    "契約者TEL携帯": {
+      "source": "案件取込用レポート",
+      "column": "携帯TEL1",
+      "conditional": true,
+      "fallback": "自宅TEL1"
+    },
+    "契約者現住所郵便番号": {
+      "source": "案件取込用レポート",
+      "column": "物件住所",
+      "transform": "extract_postal_code"
+    },
+    "契約者現住所1": {
+      "source": "案件取込用レポート",
+      "column": "物件住所",
+      "transform": "extract_prefecture"
+    },
+    "契約者現住所2": {
+      "source": "案件取込用レポート",
+      "column": "物件住所",
+      "transform": "extract_city"
+    },
+    "契約者現住所3": {
+      "source": "案件取込用レポート",
+      "column": "物件住所",
+      "transform": "extract_address_remainder",
+      "append": ["物件名", "部屋番号"]
+    }
+  },
+  "fixed_values": {
+    "入居ステータス": "入居中",
+    "滞納ステータス": "未精算",
+    "受託状況": "契約中",
+    "回収口座金融機関CD": "310",
+    "回収口座金融機関名": "GMOあおぞらネット銀行",
+    "回収口座種類": "普通",
+    "回収口座名義": "アーク株式会社",
+    "契約種類": "バックレント",
+    "クライアントCD": "10",
+    "水道代": "0",
+    "共益費": "0",
+    "更新契約手数料": "1",
+    "保証人1契約者との関係": "他",
+    "緊急連絡人1契約者との関係": "他"
+  },
+  "calculated_fields": {
+    "退去手続き（実費）": {
+      "formula": "max(月額賃料 + 管理費 + 駐車場代 + その他費用1, 70000)"
+    },
+    "管理受託日": {
+      "formula": "TODAY()"
+    },
+    "引継情報": {
+      "template": "●20日～25日頃に督促手数料2,750円or2,970円が加算されることあり。案内注意！！　●入居日：{入居日}"
+    }
+  },
+  "conditional_mappings": {
+    "保証人_緊急連絡人": {
+      "condition_column": "種別／続柄２",
+      "mappings": {
+        "保証人": {
+          "氏名2": "保証人1氏名",
+          "カナ2": "保証人1カナ",
+          "生年月日2": "保証人1生年月日",
+          "現住所2": {
+            "郵便番号": "保証人1郵便番号",
+            "住所1": "保証人1住所1",
+            "住所2": "保証人1住所2",
+            "住所3": "保証人1住所3"
+          },
+          "自宅TEL2": "保証人1TEL自宅",
+          "携帯TEL2": "保証人1TEL携帯"
+        },
+        "緊急連絡先": {
+          "氏名2": "緊急連絡人1氏名",
+          "カナ2": "緊急連絡人1カナ",
+          "現住所2": {
+            "郵便番号": "緊急連絡人1郵便番号",
+            "住所1": "緊急連絡人1住所1",
+            "住所2": "緊急連絡人1住所2",
+            "住所3": "緊急連絡人1住所3"
+          },
+          "自宅TEL2": "緊急連絡人1TEL自宅",
+          "携帯TEL2": "緊急連絡人1TEL携帯"
+        }
+      }
+    }
+  },
+  "validation_rules": {
+    "birthdate_min_year": 1900,
+    "required_fields": ["契約番号", "契約元帳:主契約者"],
+    "duplicate_check_key": "引継番号"
+  }
+}
