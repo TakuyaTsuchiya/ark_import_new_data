@@ -131,4 +131,4 @@ ark_import_new_data/
 このプロジェクトは内部使用を目的としています。
 
 ## 作成者
-アーク株式会社 システム開発チーム
+Takuya Tsuchiya
