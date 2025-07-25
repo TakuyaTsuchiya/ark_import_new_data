@@ -74,14 +74,14 @@ class DataTransformer:
             "emergency1": {}
         }
         
-        # 種別／続柄２で判定
+        # 種別／続柄２で判定（部分一致で判定）
         relationship_type = safe_str_convert(row.get("種別／続柄２", ""))
         
-        if relationship_type == "保証人":
+        if "保証人" in relationship_type:
             # 保証人情報を設定
             result["guarantor1"] = {
-                "氏名": safe_str_convert(row.get("氏名2", "")),
-                "カナ": hankaku_to_zenkaku(safe_str_convert(row.get("カナ2", ""))),
+                "氏名": safe_str_convert(row.get("名前2", "")),
+                "カナ": hankaku_to_zenkaku(safe_str_convert(row.get("名前2（カナ）", ""))),
                 "生年月日": format_date(row.get("生年月日2", "")),
                 "郵便番号": "",
                 "住所1": "",
@@ -92,7 +92,7 @@ class DataTransformer:
             }
             
             # 住所分割
-            address = safe_str_convert(row.get("現住所2", ""))
+            address = safe_str_convert(row.get("自宅住所2", ""))
             if address:
                 addr_parts = self.address_splitter.split_address(address)
                 result["guarantor1"]["郵便番号"] = addr_parts["postal_code"]
@@ -100,11 +100,11 @@ class DataTransformer:
                 result["guarantor1"]["住所2"] = addr_parts["city"]
                 result["guarantor1"]["住所3"] = addr_parts["remainder"]
                 
-        elif relationship_type == "緊急連絡先":
+        elif "緊急連絡" in relationship_type:
             # 緊急連絡人情報を設定
             result["emergency1"] = {
-                "氏名": safe_str_convert(row.get("氏名2", "")),
-                "カナ": hankaku_to_zenkaku(safe_str_convert(row.get("カナ2", ""))),
+                "氏名": safe_str_convert(row.get("名前2", "")),
+                "カナ": hankaku_to_zenkaku(safe_str_convert(row.get("名前2（カナ）", ""))),
                 "郵便番号": "",
                 "住所1": "",
                 "住所2": "",
@@ -114,7 +114,7 @@ class DataTransformer:
             }
             
             # 住所分割
-            address = safe_str_convert(row.get("現住所2", ""))
+            address = safe_str_convert(row.get("自宅住所2", ""))
             if address:
                 addr_parts = self.address_splitter.split_address(address)
                 result["emergency1"]["郵便番号"] = addr_parts["postal_code"]
@@ -183,10 +183,11 @@ class DataTransformer:
         guarantor_emergency = self.process_guarantor_emergency(row)
         
         # 保証人１（全角数字）
-        if guarantor_emergency["guarantor1"]:
+        if guarantor_emergency["guarantor1"] and guarantor_emergency["guarantor1"].get("氏名"):
             g = guarantor_emergency["guarantor1"]
             output_row["保証人１氏名"] = g["氏名"]
             output_row["保証人１カナ"] = g["カナ"]
+            output_row["保証人１契約者との関係"] = "他"  # データがある場合のみ設定
             output_row["保証人１生年月日"] = g["生年月日"]
             output_row["保証人１郵便番号"] = g["郵便番号"]
             output_row["保証人１住所1"] = g["住所1"]
@@ -196,10 +197,11 @@ class DataTransformer:
             output_row["保証人１TEL携帯"] = g["TEL携帯"]
         
         # 緊急連絡人１（全角数字）
-        if guarantor_emergency["emergency1"]:
+        if guarantor_emergency["emergency1"] and guarantor_emergency["emergency1"].get("氏名"):
             e = guarantor_emergency["emergency1"]
             output_row["緊急連絡人１氏名"] = e["氏名"]
             output_row["緊急連絡人１カナ"] = e["カナ"]
+            output_row["緊急連絡人１契約者との関係"] = "他"  # データがある場合のみ設定
             output_row["緊急連絡人１郵便番号"] = e["郵便番号"]
             output_row["緊急連絡人１住所1"] = e["住所1"]
             output_row["緊急連絡人１住所2"] = e["住所2"]

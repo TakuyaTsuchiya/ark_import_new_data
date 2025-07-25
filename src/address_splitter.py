@@ -13,6 +13,7 @@ class AddressSplitter:
     def __init__(self):
         self.prefectures = PREFECTURES
         self.city_patterns = [
+            r"(.+?市.+?区)",  # 市区（政令指定都市）
             r"(.+?[市町村])",  # 市町村
             r"(.+?郡.+?[町村])",  # 郡町村
             r"(.+?区)",  # 区（東京23区など）
