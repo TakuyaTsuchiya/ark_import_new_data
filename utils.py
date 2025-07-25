@@ -143,10 +143,14 @@ def safe_int_convert(value: Union[str, int, float]) -> int:
 
 
 def safe_str_convert(value: any) -> str:
-    """安全に文字列に変換"""
+    """安全に文字列に変換（NAN値も空文字に変換）"""
     if value is None:
         return ""
-    return str(value).strip()
+    str_value = str(value).strip()
+    # NAN値を空文字に変換
+    if str_value.lower() in ['nan', 'none', 'null']:
+        return ""
+    return str_value
 
 
 def calculate_exit_fee(rent: Union[str, int], management: Union[str, int], 

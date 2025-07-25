@@ -10,7 +10,9 @@
       "Bash(git push:*)",
       "Bash(gh pr create:*)",
       "Bash(tree:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(wc:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }

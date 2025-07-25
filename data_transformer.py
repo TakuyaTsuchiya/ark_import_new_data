@@ -182,30 +182,30 @@ class DataTransformer:
         # 保証人/緊急連絡人処理
         guarantor_emergency = self.process_guarantor_emergency(row)
         
-        # 保証人1
+        # 保証人１（全角数字）
         if guarantor_emergency["guarantor1"]:
             g = guarantor_emergency["guarantor1"]
-            output_row["保証人1氏名"] = g["氏名"]
-            output_row["保証人1カナ"] = g["カナ"]
-            output_row["保証人1生年月日"] = g["生年月日"]
-            output_row["保証人1郵便番号"] = g["郵便番号"]
-            output_row["保証人1住所1"] = g["住所1"]
-            output_row["保証人1住所2"] = g["住所2"]
-            output_row["保証人1住所3"] = g["住所3"]
-            output_row["保証人1TEL自宅"] = g["TEL自宅"]
-            output_row["保証人1TEL携帯"] = g["TEL携帯"]
+            output_row["保証人１氏名"] = g["氏名"]
+            output_row["保証人１カナ"] = g["カナ"]
+            output_row["保証人１生年月日"] = g["生年月日"]
+            output_row["保証人１郵便番号"] = g["郵便番号"]
+            output_row["保証人１住所1"] = g["住所1"]
+            output_row["保証人１住所2"] = g["住所2"]
+            output_row["保証人１住所3"] = g["住所3"]
+            output_row["保証人１TEL自宅"] = g["TEL自宅"]
+            output_row["保証人１TEL携帯"] = g["TEL携帯"]
         
-        # 緊急連絡人1
+        # 緊急連絡人１（全角数字）
         if guarantor_emergency["emergency1"]:
             e = guarantor_emergency["emergency1"]
-            output_row["緊急連絡人1氏名"] = e["氏名"]
-            output_row["緊急連絡人1カナ"] = e["カナ"]
-            output_row["緊急連絡人1郵便番号"] = e["郵便番号"]
-            output_row["緊急連絡人1住所1"] = e["住所1"]
-            output_row["緊急連絡人1住所2"] = e["住所2"]
-            output_row["緊急連絡人1住所3"] = e["住所3"]
-            output_row["緊急連絡人1TEL自宅"] = e["TEL自宅"]
-            output_row["緊急連絡人1TEL携帯"] = e["TEL携帯"]
+            output_row["緊急連絡人１氏名"] = e["氏名"]
+            output_row["緊急連絡人１カナ"] = e["カナ"]
+            output_row["緊急連絡人１郵便番号"] = e["郵便番号"]
+            output_row["緊急連絡人１住所1"] = e["住所1"]
+            output_row["緊急連絡人１住所2"] = e["住所2"]
+            output_row["緊急連絡人１住所3"] = e["住所3"]
+            output_row["緊急連絡人１TEL自宅"] = e["TEL自宅"]
+            output_row["緊急連絡人１TEL携帯"] = e["TEL携帯"]
         
         # 計算フィールド
         # 退去手続き費用
