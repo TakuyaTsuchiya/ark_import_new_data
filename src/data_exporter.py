@@ -3,9 +3,33 @@
 """
 import pandas as pd
 import os
+import csv
 from datetime import datetime
 from typing import Optional
 from utils import get_output_filename
+
+# テンプレートファイルから直接ヘッダーを読み取る
+def get_template_headers():
+    """テンプレートファイルから正確なヘッダーを取得（Unnamedカラムを空文字に変換）"""
+    template_path = r"C:\Users\user04\Downloads\ContractInfoSample（final） (2).csv"
+    try:
+        df = pd.read_csv(template_path, encoding='cp932', nrows=0)
+        headers = df.columns.tolist()
+        
+        # Unnamedカラムを空文字に変換
+        cleaned_headers = []
+        for header in headers:
+            if 'Unnamed:' in str(header):
+                cleaned_headers.append("")
+            else:
+                cleaned_headers.append(header)
+        
+        return cleaned_headers
+    except Exception as e:
+        print(f"テンプレートファイル読み込みエラー: {e}")
+        # フォールバック（緊急時用）
+        from config import OUTPUT_COLUMNS
+        return OUTPUT_COLUMNS
 
 
 class DataExporter:
@@ -18,7 +42,7 @@ class DataExporter:
                      output_path: Optional[str] = None,
                      output_dir: str = ".") -> str:
         """
-        DataFrameをCSVファイルに出力
+        DataFrameをCSVファイルに出力（固定ヘッダーを使用）
         
         Args:
             df: 出力するDataFrame
@@ -37,11 +61,12 @@ class DataExporter:
         os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
         
         try:
-            # CSVに出力
-            df.to_csv(output_path, index=False, encoding=self.encoding)
+            # 固定ヘッダーを使用してCSVに出力
+            self._write_csv_with_fixed_header(df, output_path)
+            
             print(f"\nファイルを出力しました: {output_path}")
             print(f"レコード数: {len(df)}件")
-            print(f"カラム数: {len(df.columns)}列")
+            print(f"カラム数: {len(get_template_headers())}列")
             
             # ファイルサイズを表示
             file_size = os.path.getsize(output_path)
@@ -54,6 +79,45 @@ class DataExporter:
             
         except Exception as e:
             raise Exception(f"ファイル出力エラー: {e}")
+    
+    def _write_csv_with_fixed_header(self, df: pd.DataFrame, output_path: str):
+        """
+        固定ヘッダーを使用してCSVファイルを書き込み（テンプレートから直接取得）
+        
+        Args:
+            df: 出力するDataFrame
+            output_path: 出力ファイルパス
+        """
+        # テンプレートから正確なヘッダーを取得
+        template_headers = get_template_headers()
+        
+        with open(output_path, 'w', newline='', encoding=self.encoding) as csvfile:
+            writer = csv.writer(csvfile)
+            
+            # テンプレートの正確なヘッダーを書き込み
+            writer.writerow(template_headers)
+            
+            # データ行を書き込み
+            for _, row in df.iterrows():
+                data_row = []
+                for col in template_headers:
+                    if col in df.columns:
+                        value = row[col]
+                        # NaNや空文字は空文字に統一
+                        try:
+                            if pd.isna(value) or value is None or value == "":
+                                data_row.append("")
+                            elif isinstance(value, pd.Series):
+                                # Seriesオブジェクトの場合は最初の値を取得
+                                data_row.append(str(value.iloc[0]) if len(value) > 0 and not pd.isna(value.iloc[0]) else "")
+                            else:
+                                data_row.append(str(value))
+                        except (TypeError, ValueError, AttributeError):
+                            # その他のエラーは空文字として処理
+                            data_row.append("")
+                    else:
+                        data_row.append("")
+                writer.writerow(data_row)
     
     def export_error_log(self, error_log: list, 
                         output_dir: str = ".") -> Optional[str]:
