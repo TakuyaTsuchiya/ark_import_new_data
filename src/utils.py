@@ -14,6 +14,13 @@ def remove_fullwidth_space(text: str) -> str:
     return text.replace("　", "")
 
 
+def remove_all_spaces(text: str) -> str:
+    """全角・半角スペースを全て除去"""
+    if not text:
+        return text
+    return text.replace("　", "").replace(" ", "")
+
+
 def remove_halfwidth_space(text: str) -> str:
     """半角スペースを除去"""
     if not text:
