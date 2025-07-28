@@ -23,8 +23,10 @@ class DataTransformer:
         self.address_splitter = AddressSplitter()
     
     def create_empty_output_df(self) -> pd.DataFrame:
-        """空の出力DataFrameを作成"""
-        return pd.DataFrame(columns=self.output_columns)
+        """空の出力DataFrameを作成（固定カラム順序で）"""
+        # 空文字のカラム名も含めて固定の順序でDataFrameを作成
+        data = {col: [] for col in self.output_columns}
+        return pd.DataFrame(data)
     
     def apply_transform(self, value: Any, transform: Any) -> Any:
         """変換関数を適用"""
@@ -222,6 +224,9 @@ class DataTransformer:
         # 管理受託日（今日の日付）
         output_row["管理受託日"] = get_today_formatted()
         
+        # 申請者確認日（今日の日付）
+        output_row["申請者確認日"] = get_today_formatted()
+        
         # 引継情報
         move_in_date = safe_str_convert(row.get("入居日", ""))
         output_row["引継情報"] = generate_takeover_info(move_in_date)
@@ -243,13 +248,24 @@ class DataTransformer:
         # 出力DataFrameを作成
         output_df = pd.DataFrame(output_data)
         
-        # カラム順序を整える
-        final_df = pd.DataFrame(columns=self.output_columns)
-        for col in self.output_columns:
-            if col in output_df.columns:
-                final_df[col] = output_df[col]
-            else:
-                final_df[col] = ""
+        # カラム順序を整える（固定ヘッダーを使用）
+        final_data = []
+        for idx, row in output_df.iterrows() if not output_df.empty else enumerate([]):
+            row_data = []
+            for col in self.output_columns:
+                if col in output_df.columns:
+                    value = row[col] if not pd.isna(row[col]) else ""
+                    row_data.append(str(value))
+                else:
+                    row_data.append("")
+            final_data.append(row_data)
+        
+        # 一時的にカラム名を使用してDataFrameを作成
+        temp_columns = [f"col_{i}" for i in range(len(self.output_columns))]
+        final_df = pd.DataFrame(final_data, columns=temp_columns)
+        
+        # 実際のカラム名をセット（pandasの自動リネームを回避）
+        final_df.columns = self.output_columns
         
         print(f"変換完了: {len(final_df)}件のレコード")
         
