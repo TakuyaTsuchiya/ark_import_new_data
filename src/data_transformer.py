@@ -69,6 +69,18 @@ class DataTransformer:
         
         return {"home": home_tel, "mobile": mobile_tel}
     
+    def process_phone_numbers_for_contact(self, home_tel: str, mobile_tel: str) -> Dict[str, str]:
+        """保証人・緊急連絡人用の電話番号処理"""
+        # 電話番号を正規化
+        home_tel = normalize_phone_number(home_tel)
+        mobile_tel = normalize_phone_number(mobile_tel)
+        
+        # 自宅TELのみの場合、携帯TELに移動
+        if home_tel and not mobile_tel:
+            return {"home": "", "mobile": home_tel}
+        
+        return {"home": home_tel, "mobile": mobile_tel}
+    
     def process_guarantor_emergency(self, row: pd.Series) -> Dict[str, Dict[str, str]]:
         """保証人/緊急連絡人の判定と処理"""
         result = {
@@ -80,6 +92,12 @@ class DataTransformer:
         relationship_type = safe_str_convert(row.get("種別／続柄２", ""))
         
         if "保証人" in relationship_type:
+            # 保証人の電話番号処理（主契約者と同じロジック）
+            phone_numbers = self.process_phone_numbers_for_contact(
+                safe_str_convert(row.get("自宅TEL2", "")),
+                safe_str_convert(row.get("携帯TEL2", ""))
+            )
+            
             # 保証人情報を設定
             result["guarantor1"] = {
                 "氏名": remove_all_spaces(safe_str_convert(row.get("名前2", ""))),
@@ -89,8 +107,8 @@ class DataTransformer:
                 "住所1": "",
                 "住所2": "",
                 "住所3": "",
-                "TEL自宅": normalize_phone_number(safe_str_convert(row.get("自宅TEL2", ""))),
-                "TEL携帯": normalize_phone_number(safe_str_convert(row.get("携帯TEL2", "")))
+                "TEL自宅": phone_numbers["home"],
+                "TEL携帯": phone_numbers["mobile"]
             }
             
             # 住所分割
@@ -103,6 +121,12 @@ class DataTransformer:
                 result["guarantor1"]["住所3"] = addr_parts["remainder"]
                 
         elif "緊急連絡" in relationship_type:
+            # 緊急連絡人の電話番号処理（主契約者と同じロジック）
+            phone_numbers = self.process_phone_numbers_for_contact(
+                safe_str_convert(row.get("自宅TEL2", "")),
+                safe_str_convert(row.get("携帯TEL2", ""))
+            )
+            
             # 緊急連絡人情報を設定
             result["emergency1"] = {
                 "氏名": remove_all_spaces(safe_str_convert(row.get("名前2", ""))),
@@ -111,8 +135,8 @@ class DataTransformer:
                 "住所1": "",
                 "住所2": "",
                 "住所3": "",
-                "TEL自宅": normalize_phone_number(safe_str_convert(row.get("自宅TEL2", ""))),
-                "TEL携帯": normalize_phone_number(safe_str_convert(row.get("携帯TEL2", "")))
+                "TEL自宅": phone_numbers["home"],
+                "TEL携帯": phone_numbers["mobile"]
             }
             
             # 住所分割
