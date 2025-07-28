@@ -8,7 +8,7 @@ from utils import (
     remove_fullwidth_space, remove_halfwidth_space, remove_all_spaces, hankaku_to_zenkaku,
     add_leading_zero, normalize_phone_number, format_date,
     calculate_exit_fee, generate_takeover_info, get_today_formatted,
-    safe_str_convert, safe_int_convert
+    safe_str_convert, safe_int_convert, convert_room_number
 )
 from address_splitter import AddressSplitter
 
@@ -156,7 +156,7 @@ class DataTransformer:
         property_address = safe_str_convert(row.get("物件住所", ""))
         if property_address:
             building_name = safe_str_convert(row.get("物件名", ""))
-            room_number = safe_str_convert(row.get("部屋番号", ""))
+            room_number = convert_room_number(row.get("部屋番号", ""))
             addr_parts = self.address_splitter.split_with_building(
                 property_address, building_name, room_number
             )

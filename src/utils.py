@@ -3,6 +3,7 @@
 """
 import re
 import unicodedata
+import pandas as pd
 from datetime import datetime
 from typing import Optional, Union
 
@@ -147,6 +148,32 @@ def safe_int_convert(value: Union[str, int, float]) -> int:
         return int(float(value))
     except (ValueError, TypeError):
         return 0
+
+
+def convert_room_number(value: any) -> str:
+    """部屋番号の変換（小数点除去）"""
+    if pd.isna(value) or value is None or value == "":
+        return ""
+    
+    try:
+        # 数値の場合は整数に変換してから文字列化
+        if isinstance(value, (int, float)):
+            return str(int(value))
+        
+        # 文字列の場合
+        str_value = str(value).strip()
+        if str_value == "":
+            return ""
+        
+        # 数値文字列で小数点がある場合は整数に変換
+        try:
+            float_val = float(str_value)
+            return str(int(float_val))
+        except ValueError:
+            # 数値変換できない場合はそのまま返す
+            return str_value
+    except Exception:
+        return str(value) if value is not None else ""
 
 
 def safe_str_convert(value: any) -> str:
