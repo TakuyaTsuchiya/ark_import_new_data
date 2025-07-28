@@ -141,46 +141,55 @@ class DataValidator:
     
     def validate_birthdates(self, df: pd.DataFrame) -> pd.DataFrame:
         """
-        生年月日の検証
+        生年月日の検証と修正
         
         Args:
             df: 検証するDataFrame
             
         Returns:
-            有効な生年月日を持つレコードのみのDataFrame
+            異常な生年月日を空白に修正したDataFrame（レコード自体は保持）
         """
         # 生年月日カラムを特定
         birthdate_columns = [col for col in df.columns if "生年月日" in col]
         
-        valid_indices = []
-        invalid_records = []
+        # DataFrameのコピーを作成（元のデータを変更しないため）
+        df_corrected = df.copy()
+        corrected_records = []
         
-        for idx, row in df.iterrows():
-            is_valid = True
-            
-            # 主契約者の生年月日は必須でチェック
-            if "生年月日1" in df.columns:
+        for idx, row in df_corrected.iterrows():
+            # 主契約者の生年月日をチェック
+            if "生年月日1" in df_corrected.columns:
                 main_birthdate = row.get("生年月日1", "")
-                if not self.validate_birthdate(main_birthdate):
-                    is_valid = False
-                    invalid_records.append({
+                if main_birthdate and not self.validate_birthdate(main_birthdate):
+                    # 異常な生年月日を空白に修正
+                    df_corrected.at[idx, "生年月日1"] = ""
+                    corrected_records.append({
                         "index": idx,
                         "contract_number": row.get("契約番号", ""),
-                        "birthdate": main_birthdate,
+                        "original_birthdate": main_birthdate,
                         "field": "生年月日1"
                     })
             
-            if is_valid:
-                valid_indices.append(idx)
+            # その他の生年月日カラムもチェック（生年月日2など）
+            for col in birthdate_columns:
+                if col != "生年月日1" and col in df_corrected.columns:
+                    birthdate_value = row.get(col, "")
+                    if birthdate_value and not self.validate_birthdate(birthdate_value):
+                        # 異常な生年月日を空白に修正
+                        df_corrected.at[idx, col] = ""
+                        corrected_records.append({
+                            "index": idx,
+                            "contract_number": row.get("契約番号", ""),
+                            "original_birthdate": birthdate_value,
+                            "field": col
+                        })
         
-        if invalid_records:
-            print(f"異常な生年月日を持つレコードを{len(invalid_records)}件除外しました")
-            for record in invalid_records[:3]:  # 最初の3件を表示
-                print(f"  - 契約番号: {record['contract_number']}, 生年月日: {record['birthdate']}")
-            if len(invalid_records) > 3:
-                print(f"  ... 他{len(invalid_records) - 3}件")
+        if corrected_records:
+            print(f"異常な生年月日を持つ{len(corrected_records)}件のフィールドを空白に修正しました")
+            for record in corrected_records:  # 全件表示
+                print(f"  - 契約番号: {record['contract_number']}, 元の値: {record['original_birthdate']}, フィールド: {record['field']}")
         
-        return df.loc[valid_indices].reset_index(drop=True)
+        return df_corrected
     
     def validate_all(self, report_df: pd.DataFrame, 
                     contract_list_df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[str, Any]]:

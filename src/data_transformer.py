@@ -8,7 +8,7 @@ from utils import (
     remove_fullwidth_space, remove_halfwidth_space, remove_all_spaces, hankaku_to_zenkaku,
     add_leading_zero, normalize_phone_number, format_date,
     calculate_exit_fee, generate_takeover_info, get_today_formatted,
-    safe_str_convert, safe_int_convert, convert_room_number
+    safe_str_convert, safe_int_convert, convert_room_number, extract_room_number_from_property_name
 )
 from address_splitter import AddressSplitter
 
@@ -151,14 +151,27 @@ class DataTransformer:
         output_row["契約者TEL自宅"] = phone_numbers["home"]
         output_row["契約者TEL携帯"] = phone_numbers["mobile"]
         
+        # 物件名から部屋番号を抽出（物件名に「号室」が含まれる場合）
+        original_building_name = safe_str_convert(row.get("物件名", ""))
+        original_room_number = convert_room_number(row.get("部屋番号", ""))
+        
+        # 物件名から部屋番号を抽出し、物件名をクリーンアップ
+        cleaned_building_name, extracted_room_number = extract_room_number_from_property_name(original_building_name)
+        
+        # 部屋番号の決定：元の部屋番号が空の場合は抽出した部屋番号を使用
+        final_room_number = original_room_number if original_room_number else extracted_room_number
+        final_building_name = cleaned_building_name if extracted_room_number else original_building_name
+        
+        # 出力に設定
+        output_row["物件名"] = final_building_name
+        output_row["部屋番号"] = final_room_number
+        
         # 住所分割処理
         # 契約者現住所（物件住所から生成）
         property_address = safe_str_convert(row.get("物件住所", ""))
         if property_address:
-            building_name = safe_str_convert(row.get("物件名", ""))
-            room_number = convert_room_number(row.get("部屋番号", ""))
             addr_parts = self.address_splitter.split_with_building(
-                property_address, building_name, room_number
+                property_address, final_building_name, final_room_number
             )
             output_row["契約者現住所郵便番号"] = addr_parts["postal_code"]
             output_row["契約者現住所1"] = addr_parts["prefecture"]
