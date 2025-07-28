@@ -176,6 +176,38 @@ def convert_room_number(value: any) -> str:
         return str(value) if value is not None else ""
 
 
+def extract_room_number_from_property_name(property_name: str) -> tuple[str, str]:
+    """
+    物件名から部屋番号を抽出し、物件名をクリーンアップ
+    
+    Args:
+        property_name: 物件名（例：「ハーモニーレジデンス東京イースト 203号室」）
+    
+    Returns:
+        tuple: (クリーンアップされた物件名, 抽出された部屋番号)
+               例：（「ハーモニーレジデンス東京イースト」, "203"）
+    """
+    if not property_name or pd.isna(property_name):
+        return "", ""
+    
+    property_name = str(property_name).strip()
+    
+    # 「号室」を含む場合の処理
+    if "号室" in property_name:
+        # 「数字+号室」のパターンを検索
+        pattern = r'(\d+)号室'
+        match = re.search(pattern, property_name)
+        
+        if match:
+            room_number = match.group(1)  # 数字部分を取得
+            # 物件名から「数字号室」の部分を除去
+            cleaned_property_name = re.sub(pattern, '', property_name).strip()
+            return cleaned_property_name, room_number
+    
+    # 「号室」がない場合はそのまま返す
+    return property_name, ""
+
+
 def safe_str_convert(value: any) -> str:
     """安全に文字列に変換（NAN値も空文字に変換）"""
     if value is None:
