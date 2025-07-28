@@ -120,7 +120,7 @@ class DataTransformer:
                 result["guarantor1"]["住所2"] = addr_parts["city"]
                 result["guarantor1"]["住所3"] = addr_parts["remainder"]
                 
-        elif "緊急連絡" in relationship_type:
+        elif "緊急連絡" in relationship_type or "(法)代表者１/" in relationship_type:
             # 緊急連絡人の電話番号処理（主契約者と同じロジック）
             phone_numbers = self.process_phone_numbers_for_contact(
                 safe_str_convert(row.get("自宅TEL2", "")),
