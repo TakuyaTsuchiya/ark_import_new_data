@@ -5,7 +5,7 @@ import pandas as pd
 from typing import Dict, Any, Optional
 from config import OUTPUT_COLUMNS, FIXED_VALUES, COLUMN_MAPPINGS, ADDRESS_SPLIT_TARGETS
 from utils import (
-    remove_fullwidth_space, remove_halfwidth_space, hankaku_to_zenkaku,
+    remove_fullwidth_space, remove_halfwidth_space, remove_all_spaces, hankaku_to_zenkaku,
     add_leading_zero, normalize_phone_number, format_date,
     calculate_exit_fee, generate_takeover_info, get_today_formatted,
     safe_str_convert, safe_int_convert
@@ -82,8 +82,8 @@ class DataTransformer:
         if "保証人" in relationship_type:
             # 保証人情報を設定
             result["guarantor1"] = {
-                "氏名": safe_str_convert(row.get("名前2", "")),
-                "カナ": hankaku_to_zenkaku(safe_str_convert(row.get("名前2（カナ）", ""))),
+                "氏名": remove_all_spaces(safe_str_convert(row.get("名前2", ""))),
+                "カナ": remove_all_spaces(hankaku_to_zenkaku(safe_str_convert(row.get("名前2（カナ）", "")))),
                 "生年月日": format_date(row.get("生年月日2", "")),
                 "郵便番号": "",
                 "住所1": "",
@@ -105,8 +105,8 @@ class DataTransformer:
         elif "緊急連絡" in relationship_type:
             # 緊急連絡人情報を設定
             result["emergency1"] = {
-                "氏名": safe_str_convert(row.get("名前2", "")),
-                "カナ": hankaku_to_zenkaku(safe_str_convert(row.get("名前2（カナ）", ""))),
+                "氏名": remove_all_spaces(safe_str_convert(row.get("名前2", ""))),
+                "カナ": remove_all_spaces(hankaku_to_zenkaku(safe_str_convert(row.get("名前2（カナ）", "")))),
                 "郵便番号": "",
                 "住所1": "",
                 "住所2": "",
